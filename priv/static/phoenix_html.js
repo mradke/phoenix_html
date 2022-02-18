@@ -29,11 +29,15 @@
         method = buildHiddenInput("_method", element.getAttribute("data-method")),
         csrf = buildHiddenInput("_csrf_token", element.getAttribute("data-csrf")),
         form = document.createElement("form"),
+        submit = document.createElement("input"),
         target = element.getAttribute("target");
 
     form.method = (element.getAttribute("data-method") === "get") ? "get" : "post";
     form.action = to;
     form.style.display = "hidden";
+
+    // This is necessary to enable a redirect on succesful form validation
+    form.dataset.turboFrame = "_top";
 
     if (target) form.target = target;
     else if (targetModifierKey) form.target = "_blank";
@@ -41,7 +45,12 @@
     form.appendChild(csrf);
     form.appendChild(method);
     document.body.appendChild(form);
-    form.submit();
+
+    // Insert a button and click it instead of using `form.submit`
+    // because the `submit` function does not emit a `submit` event.
+    submit.type = "submit";
+    form.appendChild(submit);
+    submit.click();
   }
 
   window.addEventListener("click", function(e) {
